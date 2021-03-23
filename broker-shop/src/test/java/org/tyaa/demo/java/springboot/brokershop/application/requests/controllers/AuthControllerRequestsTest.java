@@ -123,7 +123,8 @@ public class AuthControllerRequestsTest {
 
     @Test
     @Order(6)
-    public void whenLoggedUserRequestsAllRoles_ThenForbidden() throws Exception {
+    //public void whenLoggedUserRequestsAllRoles_ThenForbidden() throws Exception {
+    public void givenAdminRolesUrlWhenRequestThenReturnResponseEntityWithForbiddenStatus() throws Exception {
         // получить ответ "воспрещено" на попытку
         // получить список всех ролей http-запросом GET,
         // войдя предварительно как простой зарегистрированный пользователь (loginUser())
@@ -149,7 +150,8 @@ public class AuthControllerRequestsTest {
 
     @Test
     @Order(8)
-    public void whenAnonymousUserRequestsDeleteUser_ThenUnauthorized() {
+    //public void whenAnonymousUserRequestsDeleteUser_ThenUnauthorized() {
+    public void givenUserUrlWhenDeleteRequestThenReturnResponseEntityWithUnauthorizedStatus(){
         // получить ответ "не авторизован" на попытку
         // удалить пользователя с ИД 2 http-запросом DELETE,
         // войдя предварительно как незарегистрированный пользователь (anonymousUser())
@@ -164,7 +166,8 @@ public class AuthControllerRequestsTest {
 
     @Test
     @Order(9)
-    public void whenLoggedUserRequestsDeleteUser_ThenSuccess() {
+    //public void whenLoggedUserRequestsDeleteUser_ThenSuccess() {
+    public void givenUsersUrlWhenDeleteRequestThenReturnResponseEntityWithNoContentStatus(){
         // получить положительный ответ "нет содержимого" на попытку
         // удалить пользователя с ИД 2 http-запросом DELETE,
         // войдя предварительно как простой зарегистрированный пользователь (loginUser())
@@ -175,6 +178,18 @@ public class AuthControllerRequestsTest {
                         new HttpEntity<>(loginUser()),
                         String.class);
         assertEquals(HttpStatus.NO_CONTENT, httpStatus.getStatusCode());
+    }
+
+    @Test
+    @Order(10)
+    public void givenAdminRolesUsersUrlWhenRequestThenReturnResponseEntityWithOkStatus(){
+        ResponseEntity<String> httpStatus =
+                testRestTemplate.exchange(
+                        BASE_URL + "/admin/roles/1/users",
+                        HttpMethod.GET,
+                        new HttpEntity<>(loginAdmin()),
+                        String.class);
+        assertEquals(HttpStatus.OK, httpStatus.getStatusCode());
     }
 
     // метод тестового входа в ааккаунт (не тест-кейс),

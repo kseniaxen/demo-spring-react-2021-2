@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.tyaa.demo.java.springboot.brokershop.controller.AuthController;
+import org.tyaa.demo.java.springboot.brokershop.models.RoleModel;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -76,5 +77,49 @@ public class AuthControllerMethodsTest {
         ResponseEntity responseEntity = authController.getRoles();
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
+    }
+
+    @Test
+    @WithMockUser(roles = { "ADMIN" })
+    @Order(5)
+    public void givenRoleWithAdminRoleWhenCreateRoleThenReturnResponseEntityWithCreatedStatus(){
+        final RoleModel roleModel =
+                RoleModel.builder()
+                        .name("ROLE_DEMO")
+                        .build();
+        ResponseEntity responseEntity = authController.createRole(roleModel);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getStatusCode(), HttpStatus.CREATED);
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER" })
+    @Order(5)
+    public void givenRoleWithUserRoleWhenCreateRoleThenReturnResponseEntityWithBadGetawayStatus(){
+        final RoleModel roleModel =
+                RoleModel.builder()
+                        .name("ROLE_DEMO")
+                        .build();
+        ResponseEntity responseEntity = authController.createRole(roleModel);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_GATEWAY);
+    }
+
+    @Test
+    @WithMockUser(roles = { "ADMIN" })
+    @Order(5)
+    public void givenUserWithAdminRoleWhenMakeUserAdminThenReturnResponseEntityWithOkStatus() throws Exception {
+        ResponseEntity responseEntity = authController.makeUserAdmin(1L);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER" })
+    @Order(5)
+    public void givenUserWithUserRoleWhenMakeUserAdminThenReturnResponseEntityWithNotFoundStatus() throws Exception {
+        ResponseEntity responseEntity = authController.makeUserAdmin(1L);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 }
