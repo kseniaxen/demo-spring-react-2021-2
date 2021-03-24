@@ -14,6 +14,7 @@ import org.tyaa.demo.java.springboot.brokershop.BrokerShopApplication;
 import org.tyaa.demo.java.springboot.brokershop.models.ProductModel;
 import org.tyaa.demo.java.springboot.brokershop.models.ResponseModel;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +95,65 @@ public class ProductControllerRequestsTest {
             Matcher<Iterable<? super Long>> matcher = hasItem(product.getCategory().getId());
             assertThat(categoryIds, matcher);
             assertTrue(product.getQuantity() < 2000);
+            System.out.println(product);
+        });
+    }
+
+    @Test
+    @Order(3)
+    public void givenNameAndPriceGreaterThan200WhenRequestsListOfETHProductsThenCorrect() throws Exception {
+        // получение от REST API списка товаров, у которых название ETH
+        // и цена выше 200
+        ResponseEntity<ResponseModel> response =
+                testRestTemplate.getForEntity(
+                        baseUrl + "/products/filtered::orderBy:id::sortingDirection:DESC/?search=name:ETH;price>200",
+                        ResponseModel.class
+                );
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ArrayList products =
+                (ArrayList) response.getBody().getData();
+        assertNotNull(products);
+        // такой товар должен быть найден толко один
+        assertEquals(1, products.size());
+        // сложный тестовый веб-клиент testRestTemplate десериализует множество данных моделей
+        // как список словарей, поэтому нужно явное преоразование в список моделей ProductModel
+        List<ProductModel> productModels =
+                (new ObjectMapper())
+                        .convertValue(products, new TypeReference<>() { });
+        // у каждого найденного товара должны быть значения полей,
+        // соотетствующие параметрам поискового запроса
+        productModels.forEach(product -> {
+            assertEquals("ETH", product.getTitle());
+            assertTrue(product.getPrice().compareTo(new BigDecimal(200))==1);
+        });
+    }
+    @Test
+    @Order(4)
+    public void givenCategoryIdAndPriceGreaterThan70WhenRequestsListOfProductsThenCorrect () throws Exception {
+        // получение от REST API списка товаров, у которых id категории равен 1 или 2
+        // и цена ниже 2000
+        ResponseEntity<ResponseModel> response =
+                testRestTemplate.getForEntity(
+                        baseUrl + "/products/filtered::orderBy:id::sortingDirection:DESC/?search=category:[1,2];price>70",
+                        ResponseModel.class
+                );
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ArrayList products =
+                (ArrayList) response.getBody().getData();
+        assertNotNull(products);
+        assertEquals(2, products.size());
+        // сложный тестовый веб-клиент testRestTemplate десериализует множество данных моделей
+        // как список словарей, поэтому нужно явное преоразование в список моделей ProductModel
+        List<ProductModel> productModels =
+                (new ObjectMapper())
+                        .convertValue(products, new TypeReference<>() { });
+        // у каждого найденного товара должны быть значения полей,
+        // соотетствующие параметрам поискового запроса
+        productModels.forEach(product -> {
+            List<Long> categoryIds = Lists.newArrayList(1L, 2L);
+            Matcher<Iterable<? super Long>> matcher = hasItem(product.getCategory().getId());
+            assertThat(categoryIds, matcher);
+            assertTrue(product.getPrice().compareTo(new BigDecimal(70))==1);
             System.out.println(product);
         });
     }
